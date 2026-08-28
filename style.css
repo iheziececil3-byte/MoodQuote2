@@ -22,6 +22,7 @@
   --theme-accent: #64748b;
   --theme-accent-soft: rgba(100, 116, 139, 0.08);
   --theme-border: #cbd5e1;
+  --accent-color: var(--border-light);
   
   /* Mood Button Default State */
   --btn-bg: #ffffff;
@@ -214,7 +215,7 @@ body {
   width: 100%;
   min-height: 240px;
   background-color: var(--bg-card);
-  border: 1.5px solid var(--border-light);
+  border: 1.5px solid var(--accent-color);
   border-radius: var(--radius-lg);
   padding: 40px 32px;
   display: flex;
@@ -277,6 +278,14 @@ body {
   font-weight: 600;
   border: 1px solid transparent;
   transition: all var(--transition-normal);
+}
+
+.btn-new-quote:not(:disabled) {
+  background-color: var(--accent-color);
+  color: #ffffff;
+  border-color: var(--accent-color);
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
 }
 
 /* Disabled/Inactive State Style */

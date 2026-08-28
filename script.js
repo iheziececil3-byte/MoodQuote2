@@ -1,10 +1,11 @@
 /**
  * MoodQuote - Main JavaScript Entrypoint
  * -------------------------------------
- * Stage 3: Core Mood-Selection Functionality
+ * Stage 4: Mood-Based Visual Theming & New Quote Functionality
  * 
- * Connects the 6 mood buttons to the moodData dataset to display a randomly
- * selected quote for the chosen mood state when clicked.
+ * Connects mood buttons to display random quotes, updates --accent-color CSS
+ * custom property for visual theming, and enables the New Quote button for
+ * the active mood state.
  */
 
 'use strict';
@@ -82,10 +83,39 @@ const moodData = [
 // DOM Element References
 const moodButtons = document.querySelectorAll('.mood-btn');
 const quoteCard = document.getElementById('quoteCard');
+const newQuoteBtn = document.getElementById('newQuoteBtn');
+
+// Active State Tracking
+let currentMood = null;
+let currentQuoteText = null;
+
+/**
+ * Selects and displays a quote from the given mood.
+ * Prevents immediate quote repetition if the mood has multiple quotes.
+ * 
+ * @param {Object} mood - The selected mood object from moodData.
+ */
+function displayMoodQuote(mood) {
+  if (!mood || !mood.quotes || mood.quotes.length === 0) return;
+
+  let availableQuotes = mood.quotes;
+  if (mood.quotes.length > 1 && currentQuoteText) {
+    availableQuotes = mood.quotes.filter(q => q !== currentQuoteText);
+  }
+
+  const randomIndex = Math.floor(Math.random() * availableQuotes.length);
+  const selectedQuote = availableQuotes[randomIndex];
+
+  currentQuoteText = selectedQuote;
+
+  // Update the quote display card text
+  quoteCard.innerHTML = `<p class="welcome-message">"${selectedQuote}"</p>`;
+}
 
 /**
  * Handles mood selection click events.
- * Finds matching mood object from moodData and displays a randomly selected quote.
+ * Updates current mood, applies accent color theme, enables New Quote button,
+ * and displays a quote for the selected mood.
  * 
  * @param {string} selectedMoodKey - Lowercase mood identifier from data-mood attribute.
  */
@@ -94,14 +124,22 @@ function handleMoodSelect(selectedMoodKey) {
     item => item.name.toLowerCase() === selectedMoodKey.toLowerCase()
   );
 
-  if (!mood || !mood.quotes || mood.quotes.length === 0) return;
+  if (!mood) return;
 
-  // Pick a random quote from the selected mood's quotes array
-  const randomIndex = Math.floor(Math.random() * mood.quotes.length);
-  const selectedQuote = mood.quotes[randomIndex];
+  // Update current active mood reference
+  currentMood = mood;
 
-  // Update the quote display card text
-  quoteCard.innerHTML = `<p class="welcome-message">"${selectedQuote}"</p>`;
+  // Apply mood accent color to CSS custom property
+  document.documentElement.style.setProperty('--accent-color', mood.color);
+
+  // Enable the New Quote button and update accessibility state
+  if (newQuoteBtn) {
+    newQuoteBtn.disabled = false;
+    newQuoteBtn.setAttribute('aria-disabled', 'false');
+  }
+
+  // Display a quote for the newly selected mood
+  displayMoodQuote(currentMood);
 }
 
 // Attach Event Listeners to Mood Buttons
@@ -111,3 +149,12 @@ moodButtons.forEach(button => {
     handleMoodSelect(moodKey);
   });
 });
+
+// Attach Event Listener to New Quote Button
+if (newQuoteBtn) {
+  newQuoteBtn.addEventListener('click', () => {
+    if (currentMood) {
+      displayMoodQuote(currentMood);
+    }
+  });
+}
