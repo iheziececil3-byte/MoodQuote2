@@ -1,15 +1,15 @@
 /**
  * MoodQuote - Main JavaScript Entrypoint
  * -------------------------------------
- * Stage 2: Mood & Quote Dataset Definition
+ * Stage 3: Core Mood-Selection Functionality
  * 
- * Single source of truth array containing mood objects with names,
- * hex accent colors, and curated quote lists for all 6 moods.
+ * Connects the 6 mood buttons to the moodData dataset to display a randomly
+ * selected quote for the chosen mood state when clicked.
  */
 
 'use strict';
 
-// Master Dataset of Moods and Quotes
+// Master Dataset of Moods and Quotes (Single Source of Truth)
 const moodData = [
   {
     name: 'Happy',
@@ -78,3 +78,36 @@ const moodData = [
     ]
   }
 ];
+
+// DOM Element References
+const moodButtons = document.querySelectorAll('.mood-btn');
+const quoteCard = document.getElementById('quoteCard');
+
+/**
+ * Handles mood selection click events.
+ * Finds matching mood object from moodData and displays a randomly selected quote.
+ * 
+ * @param {string} selectedMoodKey - Lowercase mood identifier from data-mood attribute.
+ */
+function handleMoodSelect(selectedMoodKey) {
+  const mood = moodData.find(
+    item => item.name.toLowerCase() === selectedMoodKey.toLowerCase()
+  );
+
+  if (!mood || !mood.quotes || mood.quotes.length === 0) return;
+
+  // Pick a random quote from the selected mood's quotes array
+  const randomIndex = Math.floor(Math.random() * mood.quotes.length);
+  const selectedQuote = mood.quotes[randomIndex];
+
+  // Update the quote display card text
+  quoteCard.innerHTML = `<p class="welcome-message">"${selectedQuote}"</p>`;
+}
+
+// Attach Event Listeners to Mood Buttons
+moodButtons.forEach(button => {
+  button.addEventListener('click', () => {
+    const moodKey = button.getAttribute('data-mood');
+    handleMoodSelect(moodKey);
+  });
+});
