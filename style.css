@@ -267,6 +267,7 @@ body {
 .controls-container {
   display: flex;
   justify-content: center;
+  gap: 12px;
   width: 100%;
 }
 
@@ -315,6 +316,154 @@ body {
 }
 
 /* --------------------------------------------------------------------------
+   7b. Favorite Button
+   -------------------------------------------------------------------------- */
+.btn-favorite {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  min-height: 44px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: all var(--transition-normal);
+}
+
+.btn-favorite:not(:disabled) {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  border-color: var(--border-light);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-favorite:not(:disabled):hover {
+  border-color: var(--theme-accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Saved/favorited state: filled heart in a rose tone */
+.btn-favorite.is-favorite:not(:disabled) {
+  color: #e11d48;
+  border-color: rgba(225, 29, 72, 0.35);
+}
+
+.btn-favorite.is-favorite:not(:disabled) .heart-icon {
+  fill: currentColor;
+}
+
+.btn-favorite:focus-visible {
+  outline: 2px solid var(--theme-accent);
+  outline-offset: 2px;
+}
+
+.btn-favorite:disabled,
+.btn-favorite[disabled] {
+  background-color: var(--btn-disabled-bg);
+  color: var(--btn-disabled-text);
+  border-color: var(--btn-disabled-border);
+  cursor: not-allowed;
+  opacity: 0.7;
+  box-shadow: none;
+  transform: none;
+}
+
+/* --------------------------------------------------------------------------
+   7c. Saved Quotes Section
+   -------------------------------------------------------------------------- */
+.saved-quotes-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.saved-quotes-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.saved-quotes-empty {
+  width: 100%;
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  background-color: var(--bg-card);
+  border: 1.5px dashed var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 24px 16px;
+}
+
+.saved-quote-item {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background-color: var(--bg-card);
+  border: 1.5px solid var(--border-light);
+  border-left: 4px solid var(--item-color);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.saved-quote-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.saved-quote-mood {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--item-color);
+}
+
+.saved-quote-text {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.saved-quote-remove {
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  background-color: var(--bg-card);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-light);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.saved-quote-remove:hover {
+  border-color: var(--theme-accent);
+  color: var(--text-primary);
+}
+
+.saved-quote-remove:focus-visible {
+  outline: 2px solid var(--theme-accent);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
    8. Responsive Media Queries (<480px & <360px)
    -------------------------------------------------------------------------- */
 @media (max-width: 480px) {
@@ -336,6 +485,10 @@ body {
 
   .app-container {
     gap: 24px;
+  }
+
+  .btn-favorite {
+    padding: 10px 14px;
   }
 }
 

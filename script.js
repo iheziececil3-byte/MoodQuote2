@@ -84,10 +84,16 @@ const moodData = [
 const moodButtons = document.querySelectorAll('.mood-btn');
 const quoteCard = document.getElementById('quoteCard');
 const newQuoteBtn = document.getElementById('newQuoteBtn');
+const favoriteBtn = document.getElementById('favoriteBtn');
+const savedQuotesList = document.getElementById('savedQuotesList');
 
 // Active State Tracking
 let currentMood = null;
 let currentQuoteText = null;
+
+// Favorite State (persisted to localStorage under one key)
+const STORAGE_KEY = 'moodquote_favorites';
+let favorites = [];
 
 /**
  * Selects and displays a quote from the given mood.
@@ -110,6 +116,13 @@ function displayMoodQuote(mood) {
 
   // Update the quote display card text
   quoteCard.innerHTML = `<p class="welcome-message">"${selectedQuote}"</p>`;
+
+  // Enable the favorite button and reflect whether this quote is already saved
+  if (favoriteBtn) {
+    favoriteBtn.disabled = false;
+    favoriteBtn.setAttribute('aria-disabled', 'false');
+  }
+  updateFavoriteButtonUI();
 }
 
 /**
@@ -142,6 +155,116 @@ function handleMoodSelect(selectedMoodKey) {
   displayMoodQuote(currentMood);
 }
 
+/* --------------------------------------------------------------------------
+   Favorites: load/save, toggle, and render
+   -------------------------------------------------------------------------- */
+
+/**
+ * Reads the saved favorites from localStorage.
+ * Returns an empty array when nothing is stored or the data is invalid.
+ */
+function loadFavorites() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return [];
+    const parsed = JSON.parse(stored);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+/**
+ * Writes the current favorites array to localStorage.
+ * If storage is unavailable, the app keeps working with in-memory favorites.
+ */
+function saveFavorites() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
+  } catch (error) {
+    // Storage unavailable (private mode/quota full): favorites stay in memory only
+  }
+}
+
+/**
+ * Checks whether the given quote text is already saved.
+ */
+function isFavorite(quoteText) {
+  return favorites.some(item => item.text === quoteText);
+}
+
+/**
+ * Updates the favorite button so it shows whether the current quote is saved.
+ */
+function updateFavoriteButtonUI() {
+  if (!favoriteBtn) return;
+
+  const saved = currentQuoteText && isFavorite(currentQuoteText);
+  favoriteBtn.classList.toggle('is-favorite', saved);
+  favoriteBtn.setAttribute('aria-pressed', saved ? 'true' : 'false');
+
+  const label = favoriteBtn.querySelector('.fav-label');
+  if (label) label.textContent = saved ? 'Saved' : 'Save';
+  favoriteBtn.setAttribute(
+    'aria-label',
+    saved ? 'Remove this quote from favorites' : 'Save this quote'
+  );
+}
+
+/**
+ * Adds or removes the currently displayed quote from favorites.
+ */
+function toggleFavorite() {
+  if (!currentMood || !currentQuoteText) return;
+
+  if (isFavorite(currentQuoteText)) {
+    removeFavorite(currentQuoteText);
+  } else {
+    favorites.push({ text: currentQuoteText, mood: currentMood.name });
+    saveFavorites();
+    updateFavoriteButtonUI();
+    renderSavedQuotes();
+  }
+}
+
+/**
+ * Removes a saved quote by its text and refreshes the UI.
+ */
+function removeFavorite(quoteText) {
+  favorites = favorites.filter(item => item.text !== quoteText);
+  saveFavorites();
+  renderSavedQuotes();
+  updateFavoriteButtonUI();
+}
+
+/**
+ * Rebuilds the Saved Quotes section. Shows an empty-state message when empty.
+ */
+function renderSavedQuotes() {
+  if (!savedQuotesList) return;
+
+  if (favorites.length === 0) {
+    savedQuotesList.innerHTML =
+      '<p class="saved-quotes-empty">No saved quotes yet. Click the heart button to save your favorites!</p>';
+    return;
+  }
+
+  const itemsHtml = favorites.map((item, index) => {
+    const mood = moodData.find(m => m.name === item.mood);
+    const color = mood ? mood.color : 'var(--border-light)';
+    return `
+      <article class="saved-quote-item" style="--item-color: ${color}">
+        <div class="saved-quote-info">
+          <span class="saved-quote-mood">${item.mood}</span>
+          <p class="saved-quote-text">"${item.text}"</p>
+        </div>
+        <button type="button" class="saved-quote-remove" data-index="${index}" aria-label="Remove this saved quote">Remove</button>
+      </article>`;
+  }).join('');
+
+  savedQuotesList.innerHTML = itemsHtml;
+}
+
 // Attach Event Listeners to Mood Buttons
 moodButtons.forEach(button => {
   button.addEventListener('click', () => {
@@ -158,3 +281,27 @@ if (newQuoteBtn) {
     }
   });
 }
+
+// Attach Event Listener to Favorite Button
+if (favoriteBtn) {
+  favoriteBtn.addEventListener('click', toggleFavorite);
+}
+
+// Attach Event Listener to the Saved Quotes list (Remove buttons)
+if (savedQuotesList) {
+  savedQuotesList.addEventListener('click', (event) => {
+    const removeBtn = event.target.closest('.saved-quote-remove');
+    if (!removeBtn) return;
+
+    const index = Number(removeBtn.getAttribute('data-index'));
+    const item = favorites[index];
+    if (item) {
+      removeFavorite(item.text);
+    }
+  });
+}
+
+// Load saved favorites on startup and build the Saved Quotes section
+favorites = loadFavorites();
+renderSavedQuotes();
+updateFavoriteButtonUI();
