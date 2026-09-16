@@ -25,7 +25,7 @@ const moodData = [
   },
   {
     name: 'Calm',
-    color: '#38bdf8', // Soft Sky Blue
+    color: '#0284c7', // Oceanic Blue
     quotes: [
       "Peace begins with a conscious choice to quiet the mind.",
       "Within you, there is a stillness and a sanctuary to which you can retreat at any time.",
@@ -47,7 +47,7 @@ const moodData = [
   },
   {
     name: 'Sad',
-    color: '#64748b', // Muted Slate Blue
+    color: '#7c3aed', // Purple
     quotes: [
       "It is okay to feel sad. Giving yourself permission to feel is the first step toward healing.",
       "Tears are words that need to be felt without judgment.",
@@ -95,6 +95,36 @@ let currentQuoteText = null;
 const STORAGE_KEY = 'moodquote_favorites';
 let favorites = [];
 
+// Apply each mood's color from moodData to its button as a CSS custom property.
+// This keeps moodData as the single source of truth for mood colors.
+moodButtons.forEach(button => {
+  const moodKey = button.getAttribute('data-mood');
+  const mood = moodData.find(
+    item => item.name.toLowerCase() === moodKey.toLowerCase()
+  );
+  if (mood) {
+    button.style.setProperty('--mood-color', mood.color);
+  }
+});
+
+/**
+ * Marks one mood button as selected and clears the others.
+ * Uses the is-selected class for visuals and aria-pressed for accessibility,
+ * so the selected state does not depend on browser focus.
+ *
+ * @param {string} selectedMoodKey - Lowercase mood identifier from data-mood attribute.
+ */
+function updateSelectedMood(selectedMoodKey) {
+  moodButtons.forEach(button => {
+    const isSelected = button.getAttribute('data-mood') === selectedMoodKey;
+    button.classList.toggle('is-selected', isSelected);
+    button.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+  });
+
+  // Signal that a mood is active so the quote card can display its tint.
+  document.body.classList.add('has-mood');
+}
+
 /**
  * Selects and displays a quote from the given mood.
  * Prevents immediate quote repetition if the mood has multiple quotes.
@@ -141,6 +171,9 @@ function handleMoodSelect(selectedMoodKey) {
 
   // Update current active mood reference
   currentMood = mood;
+
+  // Mark this mood as the selected one and clear any previous selection
+  updateSelectedMood(selectedMoodKey);
 
   // Apply mood accent color to CSS custom property
   document.documentElement.style.setProperty('--accent-color', mood.color);
