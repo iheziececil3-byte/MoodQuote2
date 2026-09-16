@@ -102,6 +102,62 @@ At this point, I am deliberately leaving the application code alone. The goal is
 
 ---
 
+## Iteration 1 — Favorites + localStorage
+
+**Commit:** `29a9b66 — Add quote favorites with localStorage persistence`
+
+After the original stages and the documentation were finished, I went back to the application and added two more rounds of features. The first one was letting the user save a quote they liked.
+
+I added a heart button next to the New Quote button. When a quote is on screen, the user can save it, and it shows up in a new Saved Quotes section below. Each saved quote stores its text and the mood it came from.
+
+I did not want a backend or a database for this. The application still stays fully client-side, and the favorites are kept in the browser's `localStorage`, so they remain after a page refresh.
+
+There were a few details I had to handle. The favorite button is disabled before a quote exists, because there is nothing to save yet. A quote can only be saved once, so I added a check to stop duplicates. Saved quotes can be removed, and removing one also updates the heart button if it matches the quote currently on screen. The heart button and the Saved Quotes list always stay in sync, so they cannot disagree about whether the current quote is saved.
+
+I also used `aria-pressed` and a label that changes between "Save" and "Saved" on the favorite button, so the saved state is also part of the button's accessibility state.
+
+I kept `moodData` as the single source of truth for the moods. The favorites are stored separately, because they are the user's own list and not part of the mood data itself.
+
+For testing, I ran 11 manual tests covering the initial state, selecting a mood, saving a quote, duplicate protection, persistence after refresh, removing saved quotes, the synchronization between the saved list and the favorite button, New Quote behavior, quote repetition, keyboard accessibility, and the mobile layout. All 11 passed.
+
+I also wrote a small Node test harness that checked the JavaScript logic without a browser. It passed 38 out of 38 checks, and `node --check script.js` passed as well.
+
+This round taught me that a feature does not automatically need a server. `localStorage` lets a simple application remember things on the user's own device.
+
+---
+
+## Iteration 2 — Mood States + Interaction Feedback
+
+**Commit:** `2b87cd9 — Improve mood states and interaction feedback`
+
+The second round came from testing more than from a plan. While using the application I noticed small interaction problems that made it feel less polished, and I decided to fix them.
+
+The first problem was the selected mood. After clicking a mood, the theme changed, but the button itself did not clearly stay selected once I clicked somewhere else or moved the keyboard focus. I learned that a selected state and keyboard focus are two different things. Focus shows which element the keyboard is on, while selection shows the active choice. I wanted the chosen mood to stay visibly selected no matter where the focus went.
+
+I added an `is-selected` class and kept it in sync with `aria-pressed`, so exactly one mood is selected at a time. The selected mood now stays highlighted after clicking elsewhere, after using the keyboard, after saving a quote, and after generating a new quote.
+
+I also gave the mood buttons visible hover feedback. Instead of creating six separate hardcoded color styles, I kept it data-driven. Each button reads its color from `moodData`, so the mood colors still live in only one place.
+
+While testing the visual states, I also changed two of the mood colors. Calm became `#0284c7` and Sad became `#7c3aed`. The other four mood colors stayed the same.
+
+I added a subtle background tint to the quote card based on the selected mood's accent color. I kept the existing border behavior and made sure the quote text stays readable on top of the tint.
+
+The New Quote button also received hover, active, and focus-visible states for when it is enabled, and the disabled state is still protected.
+
+I made the "How are you feeling right now?" heading slightly more prominent. I scoped that change to the mood section only, so the Saved Quotes heading was not affected.
+
+Throughout this round I was careful not to break what already worked. The favorites, the `localStorage` persistence, quote generation, duplicate protection, the no-immediate-repeat behavior, the responsive layout, and keyboard interaction all remained in place. The implementation fit inside the existing architecture and did not add any backend, API, or database.
+
+There was also an interesting discovery about quote repetition. I investigated whether the quote logic was failing because a quote could show up again after a few clicks. The actual behavior is that the application only prevents the immediate previous quote from being selected again while staying in the same mood. It does not keep a complete history, so a sequence like A, B, A can happen. I confirmed this behavior existed before Iteration 2, meaning the new changes did not introduce it. I decided to leave it unchanged, because the original requirement was only to prevent an immediate back-to-back repeat, and that is working. Preventing all repeats would need a different quote-history mechanism and would be a separate feature.
+
+For testing, I ran 20 manual tests covering the initial state, the selected state, mood switching, the hover states, New Quote interaction, favorites integration, keyboard accessibility, persistence, quote repetition, disabled-state protection, all of the mood colors, saved quote colors, removal, duplicate protection, the responsive layout, and full keyboard navigation. All 20 passed.
+
+The final audit also passed: `node --check script.js` and `git diff --check` were clean, only the three app files changed, and the favorites and quote-display logic were verified unchanged.
+
+This round reminded me that testing is not only about finding errors. It is also how I notice the small interaction details that make an application feel complete. Not everything here was planned perfectly, and most of it came from paying attention while using the app.
+
+---
+
 ## What I Learned
 
 The biggest lesson from MoodQuote was that I understand the code better when I build it in small stages instead of trying to solve everything at once.
@@ -117,6 +173,8 @@ I also learned how CSS custom properties can be changed with JavaScript. Using `
 The responsive and accessibility work also changed how I think about finishing a project. A page looking good on my screen does not automatically mean it is comfortable to use on a phone or with a keyboard.
 
 Finally, I became more comfortable with Git. I learned to use commits as checkpoints, check the working tree before committing, and push completed stages to GitHub instead of treating Git as something I only need at the very end.
+
+After the original stages, I also learned that an application can remember the user's data without a server, because the favorites are handled entirely on the client side with `localStorage`. The mood interaction work also taught me the difference between a selected state and keyboard focus, since keeping the chosen mood visible needed a state that does not depend on focus at all.
 
 ---
 
@@ -147,6 +205,8 @@ The project was built through these Git checkpoints:
 | Stage 3 | `636ad3a` | Connected the mood buttons to the dataset and quote display. |
 | Stage 4 | `e156159` | Added mood theming, current mood tracking, and New Quote functionality. |
 | Stage 5 | `9d8d672` | Refined responsive behavior and accessibility. |
+| Iteration 1 | `29a9b66` | Added quote favorites with `localStorage` persistence. |
+| Iteration 2 | `2b87cd9` | Added persistent mood selection, mood-specific hover, and interaction feedback. |
 
 These checkpoints made it easier to see how the project developed instead of having one large change at the end.
 
