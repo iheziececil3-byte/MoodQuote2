@@ -15,6 +15,7 @@ const moodData = [
   {
     name: 'Happy',
     color: '#eab308', // Warm Golden Yellow
+    icon: '😊',
     quotes: [
       "Happiness is not something ready-made. It comes from your own actions.",
       "Joy is the simplest form of gratitude.",
@@ -26,6 +27,7 @@ const moodData = [
   {
     name: 'Calm',
     color: '#0284c7', // Oceanic Blue
+    icon: '😌',
     quotes: [
       "Peace begins with a conscious choice to quiet the mind.",
       "Within you, there is a stillness and a sanctuary to which you can retreat at any time.",
@@ -37,6 +39,7 @@ const moodData = [
   {
     name: 'Motivated',
     color: '#f97316', // Warm Orange
+    icon: '🔥',
     quotes: [
       "It always seems impossible until it's done.",
       "The secret of getting ahead is getting started.",
@@ -48,6 +51,7 @@ const moodData = [
   {
     name: 'Sad',
     color: '#7c3aed', // Purple
+    icon: '😢',
     quotes: [
       "It is okay to feel sad. Giving yourself permission to feel is the first step toward healing.",
       "Tears are words that need to be felt without judgment.",
@@ -59,6 +63,7 @@ const moodData = [
   {
     name: 'Anxious',
     color: '#14b8a6', // Soft Teal
+    icon: '😰',
     quotes: [
       "Take a slow, deep breath. You are safe right now in this moment.",
       "Anxiety tells stories that haven't happened yet. Focus on the ground beneath your feet.",
@@ -70,6 +75,7 @@ const moodData = [
   {
     name: 'Grateful',
     color: '#d97706', // Warm Amber
+    icon: '🙏',
     quotes: [
       "Gratitude turns what we have into enough.",
       "When you focus on the good, the good gets better.",
@@ -95,8 +101,8 @@ let currentQuoteText = null;
 const STORAGE_KEY = 'moodquote_favorites';
 let favorites = [];
 
-// Apply each mood's color from moodData to its button as a CSS custom property.
-// This keeps moodData as the single source of truth for mood colors.
+// Apply each mood's color and icon from moodData to its button.
+// This keeps moodData as the single source of truth for mood visual properties.
 moodButtons.forEach(button => {
   const moodKey = button.getAttribute('data-mood');
   const mood = moodData.find(
@@ -104,6 +110,10 @@ moodButtons.forEach(button => {
   );
   if (mood) {
     button.style.setProperty('--mood-color', mood.color);
+    const iconContainer = button.querySelector('.mood-icon');
+    if (iconContainer && mood.icon) {
+      iconContainer.textContent = mood.icon;
+    }
   }
 });
 
