@@ -345,6 +345,16 @@ body::after {
   word-break: break-word;
 }
 
+.quote-author {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-top: 10px;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
 /* --------------------------------------------------------------------------
    7. Action Controls (New Quote Button - Visually Disabled)
    -------------------------------------------------------------------------- */
@@ -532,6 +542,15 @@ body::after {
 .saved-quote-text {
   font-size: 0.95rem;
   color: var(--text-primary);
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.saved-quote-author {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--text-muted);
+  margin-top: 2px;
   overflow-wrap: break-word;
   word-break: break-word;
 }
