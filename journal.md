@@ -158,6 +158,57 @@ This round reminded me that testing is not only about finding errors. It is also
 
 ---
 
+## Iteration 3 — Iconography, Background Decoration, and Quote Attribution
+
+This week brought three focused iterations to MoodQuote: improving the mood button icons, adding an organic line-art background layer, and expanding the quote collection to 60 quotes with author attributions and safe favorites migration.
+
+### Part 1 — Mood Selector Iconography
+
+**Commit:** `b06aadf — feat: improve mood selector iconography`
+
+The original hand-drawn icons on the mood buttons were replaced with clear, mood-appropriate emojis (Happy: 😊, Calm: 😌, Motivated: 🔥, Sad: 😢, Anxious: 😰, Grateful: 🙏).
+
+To preserve `moodData` as the single source of truth, the emojis were added directly to the master array in `script.js` rather than hardcoded into the HTML markup. On page load, JavaScript injects each emoji into its respective `.mood-icon` container. In `style.css`, `.mood-icon` was updated with flexible alignment and consistent line height.
+
+Testing: Verified in code that all six mood buttons receive their respective emojis from `moodData`.
+
+---
+
+### Part 2 — Organic Line-Art Background
+
+**Commit:** `573fcf5 — feat: add subtle organic line-art background`
+
+To give the application subtle visual depth while keeping its clean aesthetic, an organic line-art SVG overlay (`contours.svg`) was added to the background.
+
+The decorative SVG is rendered via a fixed pseudo-element (`body::after`) with low opacity (0.05) and `pointer-events: none`, ensuring it never interferes with content readability or button clicks. It sits above the reactive mood gradient (`body::before`), which uses the CSS `@property --glow` token to smoothly transition accent colors when moods change. A `prefers-reduced-motion` media query was included to disable transitions for users who prefer reduced motion.
+
+Testing: Verified CSS property syntax and visually confirmed background layering behind interactive containers.
+
+---
+
+### Part 3 — Quote Library Expansion & Author Attribution
+
+**Commit:** `6350a8c — feat: expand quote dataset to 60 quotes and add author attribution`
+
+The quote collection was expanded from 30 quotes to 60 quotes (exactly 10 per mood). Exactly five new attributed quotes were added to each of the six moods, while preserving all 30 original quotes in their exact text, punctuation, and ordering.
+
+The quote data structure in `moodData` was standardized to `{ text: "...", author: "..." }`. Original quotes without documented authors use an empty author string (`""`), while new quotes feature credible attributions across 27 distinct authors (no single author appears more than twice, and all quotes are under 25 words).
+
+To display authors cleanly, a subordinate `.quote-author` element was styled in `style.css` and rendered on a separate line below the quote text. In Saved Quotes, `.saved-quote-author` shows the author under each attributed favorite. When a quote lacks an author, the author element is omitted completely without leaving blank space or placeholders. Dynamic quote text and authors are inserted strictly via `textContent` rather than `innerHTML` to ensure security.
+
+For favorites, backward compatibility and data safety were prioritized:
+- Before any migration write, the raw stored data is copied into `moodquote_favorites_backup` if not already present. Existing backups are never overwritten.
+- Existing favorites are safely migrated to `{ text, mood, author }`. If an author is missing, JavaScript matches the quote against `moodData` using a canonical text normalizer (`normalizeQuoteText`). Unmatched legacy favorites preserve their original text and mood without an author.
+- If storage parsing fails, the raw storage and backup remain untouched, and the app gracefully falls back to an in-memory session.
+- Canonical quote text normalization (trimming whitespace, ignoring surrounding quotation marks, and collapsing repeated whitespace) is used consistently for anti-repeat logic, Save/Saved state lookups, and duplicate prevention.
+
+Testing:
+- `node --check script.js` was executed and passed with exit code 0.
+- Safe extraction and validation of `moodData` in a single throwaway attempt was not feasible due to shell parser quoting boundaries; manual code review confirmed all 60 quotes, author attributions, and exact preservation of the original 30 quotes.
+- Migration logic, backup creation, and deduplication were verified through code auditing. Interactive UI behavior, live screen-reader announcements, and persistent browser storage require manual browser testing.
+
+---
+
 ## What I Learned
 
 The biggest lesson from MoodQuote was that I understand the code better when I build it in small stages instead of trying to solve everything at once.
@@ -174,7 +225,7 @@ The responsive and accessibility work also changed how I think about finishing a
 
 Finally, I became more comfortable with Git. I learned to use commits as checkpoints, check the working tree before committing, and push completed stages to GitHub instead of treating Git as something I only need at the very end.
 
-After the original stages, I also learned that an application can remember the user's data without a server, because the favorites are handled entirely on the client side with `localStorage`. The mood interaction work also taught me the difference between a selected state and keyboard focus, since keeping the chosen mood visible needed a state that does not depend on focus at all.
+After the original stages, I also learned that an application can remember the user's data without a server, because the favorites are handled entirely on the client side with `localStorage`. The mood interaction work also taught me the difference between a selected state and keyboard focus, since keeping the chosen mood visible needed a state that does not depend on focus at all. In the latest iterations, I also learned how to plan backward-compatible data migrations with storage backups, layer decorative SVG pseudo-elements over reactive CSS background variables, and use canonical string normalization for reliable deduplication.
 
 ---
 
@@ -192,6 +243,8 @@ During the accessibility refinement, I also had to improve the contrast of the N
 
 For mobile usability, I focused on improving the existing layout rather than creating a completely different mobile version. The goal was to refine what was already there, not redesign the application.
 
+During the quote expansion, I had to ensure that expanding from 30 to 60 quotes did not disturb the original dataset. Standardizing the quote model to `{ text, author }` while defaulting original quotes to empty authors preserved their integrity. For favorites, creating an automated backup before any migration write prevented data loss when upgrading stored favorites.
+
 ---
 
 ## Git Checkpoints
@@ -207,6 +260,9 @@ The project was built through these Git checkpoints:
 | Stage 5 | `9d8d672` | Refined responsive behavior and accessibility. |
 | Iteration 1 | `29a9b66` | Added quote favorites with `localStorage` persistence. |
 | Iteration 2 | `2b87cd9` | Added persistent mood selection, mood-specific hover, and interaction feedback. |
+| Iteration 3a | `b06aadf` | Replaced mood button icons with data-driven emojis. |
+| Iteration 3b | `573fcf5` | Added subtle organic line-art background overlay. |
+| Iteration 3c | `6350a8c` | Expanded dataset to 60 quotes, added author attribution, and safe favorites migration. |
 
 These checkpoints made it easier to see how the project developed instead of having one large change at the end.
 

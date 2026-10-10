@@ -6,9 +6,9 @@ MoodQuote is a simple mood-based quote application.
 
 The user chooses one of six moods: Happy, Calm, Motivated, Sad, Anxious, or Grateful.
 
-The application then displays a quote associated with that mood. The user can also use the New Quote button to get another quote from the currently selected mood.
+The application then displays a quote associated with that mood, along with author attribution where available. The user can also use the New Quote button to get another quote from the currently selected mood.
 
-The application also changes its accent color based on the selected mood.
+The application also changes its accent color based on the selected mood and features a subtle organic line-art background overlay.
 
 The user can save any quote they like as a favorite, and saved favorites stay in the browser between refreshes.
 
@@ -18,26 +18,30 @@ The user can save any quote they like as a favorite, and saved favorites stay in
 
 ## Features
 
-- Six mood selections:
-  - Happy
-  - Calm
-  - Motivated
-  - Sad
-  - Anxious
-  - Grateful
+- Six mood selections with data-driven emoji icons:
+  - Happy (😊)
+  - Calm (😌)
+  - Motivated (🔥)
+  - Sad (😢)
+  - Anxious (😰)
+  - Grateful (🙏)
+- 60 curated quotes (10 quotes per mood: five foundational and five attributed)
+- Author attribution display on a separate, subordinate line for attributed quotes
 - Mood-specific quotes
 - Random quote selection
 - New Quote button
-- Prevention of immediate quote repetition when multiple quotes are available
+- Prevention of immediate quote repetition when multiple quotes are available (canonical text comparison)
 - Mood-based accent color theming
 - Persistent selected mood state that does not depend on keyboard focus (using `is-selected` and `aria-pressed`)
 - Mood-specific hover feedback using each mood's existing color from `moodData`
+- Subtle organic line-art background overlay (`contours.svg`) layered with atmospheric radial gradients
 - A subtle mood-colored tint on the quote card
 - A slightly more prominent mood question heading, scoped so other headings stay unchanged
 - Hover, active, and focus-visible states for the New Quote button when enabled
 - Favorites: save the currently displayed quote with a heart button
-- Saved Quotes section that stays in sync with the favorite button
-- Duplicate favorites are prevented
+- Saved Quotes section displaying mood, quote text, and author attribution
+- Automatic backward-compatible favorites migration with immutable `localStorage` backup (`moodquote_favorites_backup`)
+- Canonical quote text normalization for duplicate prevention and matching
 - Saved quotes can be removed
 - Favorites persist across page refreshes using the browser's `localStorage`
 - Responsive layout
@@ -60,6 +64,7 @@ MoodQuote2/
 ├── index.html
 ├── style.css
 ├── script.js
+├── contours.svg
 ├── README.md
 └── journal.md
 ```
@@ -67,6 +72,7 @@ MoodQuote2/
 - `index.html`: Main HTML structure containing header, mood buttons grid, quote card display area, action controls, and footer.
 - `style.css`: Primary stylesheet containing design tokens, CSS variables (`--accent-color`), responsive media queries, focus states, and button styles.
 - `script.js`: Core JavaScript file containing the master `moodData` array, event listeners, active mood state tracking, quote selection logic, and favorites handling.
+- `contours.svg`: Decorative organic line-art SVG overlay rendered in `body::after`.
 - `README.md`: Project overview, features, technology stack, setup instructions, and development stage documentation.
 - `journal.md`: Stage-by-stage personal development journal recording the learning process, decisions, and reflections.
 
@@ -76,23 +82,26 @@ MoodQuote2/
 2. JavaScript reads the mood from the selected button's `data-mood` attribute.
 3. It finds the matching mood inside `moodData`.
 4. A quote is selected from that mood's quote array.
-5. The quote is displayed inside the quote card.
+5. The quote text and author (when present) are displayed inside the quote card.
 6. The mood's existing color is applied through the `--accent-color` CSS custom property.
 7. The New Quote button becomes available.
 8. The user can request another quote without selecting the mood again.
 9. When multiple quotes exist, the currently displayed quote is excluded from the next selection so it does not immediately repeat.
 
-`moodData` is the single source of truth for the mood names, colors, and quotes.
+`moodData` is the single source of truth for the mood names, colors, icons, quotes, and authors.
 
-During development, two of the mood colors were adjusted: Calm is `#0284c7` and Sad is `#7c3aed`. The other four mood colors were left unchanged. The mood hover and selected styles also take their colors from `moodData`, so there is still only one place where the mood colors live.
+During development, two of the mood colors were adjusted: Calm is `#0284c7` and Sad is `#7c3aed`. The other four mood colors were left unchanged. The mood hover, selected styles, and button emojis also take their values from `moodData`, so there is still only one place where the mood properties live.
 
 ## Favorites
 
 The user can save the currently displayed quote with the heart button next to the New Quote button. Saved quotes appear in the Saved Quotes section.
 
 - Favorites are stored in the browser's `localStorage`, so they remain after a page refresh.
-- Each saved favorite stores the quote `text` and the `mood` it came from.
-- A quote cannot be saved twice.
+- Each saved favorite stores the quote `text`, the `mood` it came from, and its `author`.
+- On load, older saved favorites are safely migrated to include author attributions matched from `moodData`.
+- An immutable backup of existing stored favorites is created under `moodquote_favorites_backup` before any migration write.
+- Unmatched legacy favorites preserve their original text and mood without an author.
+- Canonical quote text normalization ensures quotes cannot be saved twice even with whitespace or quote formatting differences.
 - Saved quotes can be removed, and removing one also updates the heart button if the current quote is the one being removed.
 - The heart button and the Saved Quotes list stay synchronized.
 
@@ -140,10 +149,13 @@ Alternatively, a local development server such as VS Code Live Server can also b
 | Stage 6 | Documentation / Finalization | `736a8c6` |
 | Iteration 1 | Favorites + localStorage | `29a9b66` |
 | Iteration 2 | Mood States + Interaction Feedback | `2b87cd9` |
+| Iteration 3a | Mood Selector Iconography | `b06aadf` |
+| Iteration 3b | Subtle Line-Art Background | `573fcf5` |
+| Iteration 3c | Quotes Expansion & Author Attribution | `6350a8c` |
 
 ## Current Status
 
-The MoodQuote application was built through Stage 5, and Stage 6 completes the project documentation and finalization. Two additional product iterations were then added: favorites with `localStorage` persistence, and improvements to mood states and interaction feedback. The application remains fully client-side with no backend.
+The MoodQuote application was built through Stage 5, and Stage 6 completed the initial project documentation and finalization. Subsequent iterations added favorites with `localStorage` persistence, interaction feedback, mood selector iconography, background decoration, an expanded 60-quote library with author attributions, and safe favorites migration. The application remains fully client-side with no backend.
 
 ## Limitations
 
